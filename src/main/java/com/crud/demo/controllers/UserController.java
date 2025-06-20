@@ -1,34 +1,28 @@
 package com.crud.demo.controllers;
 
+
 import com.crud.demo.model.UserModel;
-import com.crud.demo.service.UserServicelmpl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
-@RestController
 @RequestMapping("api/v1/user")
-public class UserController {
-
-    private final UserServicelmpl userService;
-    public UserController(UserServicelmpl userService) {
-        this.userService = userService;
-    }
+public interface UserController {
 
     @GetMapping
-    public List<UserModel> getAllUsers() {
-        return userService.getAllUsers();
-    }
+    List<UserModel> getAllUsers();
+
+    @GetMapping("/{id}")
+    UserModel getUserById(@PathVariable Long id);
+
+    @PutMapping("/{id}")
+    UserModel updateUser(@PathVariable Long id, @RequestBody UserModel userModel);
 
     @PostMapping
-    public UserModel createUser(@RequestBody UserModel userModel) {
-        return userService.saveUser(userModel);
-    }
+    UserModel createUser(UserModel userModel);
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-    }
-
-
+    ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id);
 }
