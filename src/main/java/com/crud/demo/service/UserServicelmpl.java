@@ -7,6 +7,7 @@ import com.crud.demo.repository.UserRespository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -22,19 +23,25 @@ public class UserServicelmpl implements UserService {
     }
 
     @Override
-    public UserModel getUserById(Long id){
-        return userRespository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public Optional<UserModel> getUserById(Long id){
+        return userRespository.findById(id);
     }
 
     @Override
     public UserModel updateUser(Long id, UserModel userModel){
-        UserModel Existing = userRespository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Existing.setFirstName(userModel.getFirstName());
-        Existing.setLastName(userModel.getLastName());
-        Existing.setEmail(userModel.getEmail());
-        return userRespository.save(Existing);
+        if( id != null ){
+            Optional<UserModel> existingUserModel = userRespository.findById(id);
+            if(existingUserModel.isPresent()){
+                UserModel existing = existingUserModel.get();
+                existing.setUsername(userModel.getUsername());
+                existing.setFirstName(userModel.getFirstName());
+                existing.setLastName(userModel.getLastName());
+                existing.setEmail(userModel.getEmail());
+                return userRespository.save(existing);
+            }
+        }
+        userModel.setId(id);
+        return userRespository.save(userModel);
     }
 
     @Override
