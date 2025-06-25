@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface UserController {
 
     @GetMapping
-    ResponseEntity<List<UserModel>> getAllUsers();
+    ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers();
 
     @GetMapping("/{id}")
     ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id);

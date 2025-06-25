@@ -6,15 +6,14 @@ import com.crud.demo.dtos.UserResponse;
 import com.crud.demo.mapper.UserMapper;
 import com.crud.demo.model.UserModel;
 import com.crud.demo.service.UserServicelmpl;
+import org.apache.catalina.User;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class UserControllerlmpl implements UserController  {
@@ -25,9 +24,18 @@ public class UserControllerlmpl implements UserController  {
     }
 
     @Override
-    public ResponseEntity<List<UserModel>> getAllUsers() {
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
         List<UserModel> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+        List<UserResponse> userResponses = users.stream()
+                .map(UserMapper::toResponse)
+                .collect(Collectors.toList());
+
+        ApiResponse<List<UserResponse>> apiResponse = ApiResponse.<List<UserResponse>>builder()
+                .message("Users obtained successfully")
+                .data(userResponses)
+                .status(HttpStatus.OK)
+                .build();
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
     @Override
