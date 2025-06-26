@@ -3,6 +3,7 @@ package com.crud.demo.controllers;
 import com.crud.demo.dtos.ApiResponse;
 import com.crud.demo.dtos.UserRequest;
 import com.crud.demo.dtos.UserResponse;
+import com.crud.demo.exceptions.UserNotFoundException;
 import com.crud.demo.mapper.UserMapper;
 import com.crud.demo.model.UserModel;
 import com.crud.demo.service.UserServicelmpl;
@@ -40,39 +41,23 @@ public class UserControllerlmpl implements UserController  {
 
     @Override
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id){
-        Optional<UserModel> user = userService.getUserById(id);
+        UserModel user = userService.getUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("The user with id " + id + " does not exist"));
 
-        if(user.isEmpty()){
-            ApiResponse<UserResponse> notFoundResponse = ApiResponse.<UserResponse>builder()
-                    .message("User with id "+ id + " not Found")
-                    .data(null)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-            return new ResponseEntity<>(notFoundResponse, HttpStatus.NOT_FOUND);
-        }else {
-            UserResponse userResponse = UserMapper.toResponse(user.get());
+            UserResponse userResponse = UserMapper.toResponse(user);
             ApiResponse<UserResponse> notFoundResponse = ApiResponse.<UserResponse>builder()
                     .message("User is found")
                     .data(userResponse)
                     .status(HttpStatus.OK)
                     .build();
             return new ResponseEntity<>(notFoundResponse, HttpStatus.OK);
-        }
-
-
     }
 
     @Override
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest){
-        Optional<UserModel> user = userService.getUserById(id);
-        if(user.isEmpty()){
-            ApiResponse<UserResponse> apiResponse = ApiResponse.<UserResponse>builder()
-                    .message("This user does not exist")
-                    .data(null)
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
-            return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
-        }else {
+        UserModel user = userService.getUserById(id)
+                .orElseThrow(()-> new UserNotFoundException("The User with id " + id + " does not exist"));
+
             UserModel entity = UserMapper.toEntity(userRequest);
             UserModel updatedEntity = userService.updateUser(id, entity);
             UserResponse userResponse = UserMapper.toResponse(updatedEntity);
@@ -83,7 +68,7 @@ public class UserControllerlmpl implements UserController  {
                     .status(HttpStatus.OK)
                     .build();
             return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-        }
+
     }
 
     @Override
@@ -103,6 +88,9 @@ public class UserControllerlmpl implements UserController  {
 
     @Override
     public ResponseEntity<ApiResponse<UserResponse>> deleteUser(@PathVariable Long id) {
+        UserModel user = userService.getUserById(id)
+                .orElseThrow(()-> new UserNotFoundException("The User with id " + id + " does not exist"));
+
         userService.deleteUser(id);
 
         ApiResponse<UserResponse> apiResponse = ApiResponse.<UserResponse>builder()
